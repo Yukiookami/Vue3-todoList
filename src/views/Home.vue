@@ -50,7 +50,7 @@
 <script>
 import { reactive, toRefs } from '@vue/reactivity'
 import todoListItem from '../components/todoListItem'
-import { computed } from '@vue/runtime-core'
+import { computed, onMounted, watch } from '@vue/runtime-core'
 
 export default {
   setup () {
@@ -148,8 +148,41 @@ export default {
             return ele
           }
         })
+      },
+      /**
+       * 将数据存储到本地
+       * 
+       * @param {String} name
+       * @param {any} data
+       */
+      saveData: (name, data) => {
+        localStorage.setItem(name, JSON.stringify(data))
+      },
+      /**
+       * 获取存储在本地的数据
+       * 
+       * @param {String} name
+       */
+      getData: name => {
+        return localStorage.getItem(name)
       }
     })
+
+    onMounted(() => {
+      if (state.getData("todoList")) {
+        state.todoList = JSON.parse(state.getData("todoList"))
+      }
+    })
+
+    watch(
+      () => state.todoList,
+      todoList => {
+        state.saveData("todoList", todoList)
+      },
+      {
+        deep: true
+      }
+    )
     
     return {
       ...toRefs(state)
